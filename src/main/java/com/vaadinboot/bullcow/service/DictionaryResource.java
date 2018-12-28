@@ -9,5 +9,5 @@ import java.util.List;
  */
 public interface DictionaryResource {
 
-    List<String> getDictionary(GameLanguage language, int gameComplexityLevel);
+    List<String> getDictionary(GameLanguage language);
 }

@@ -6,7 +6,6 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 import com.vaadinboot.bullcow.enums.GameLanguage;
-import com.vaadinboot.bullcow.service.DictionaryResource;
 import com.vaadinboot.bullcow.service.GameService;
 import javaslang.Tuple2;
 import lombok.extern.java.Log;
@@ -36,8 +35,6 @@ public class MainView extends VerticalLayout {
 
     private final transient GameService service;
 
-    private final transient DictionaryResource resource;
-
     private final StartLayout startLayout;
 
     private GameLayout gameLayout;
@@ -48,9 +45,8 @@ public class MainView extends VerticalLayout {
 
     private List<String> dictionary;
 
-    public MainView(GameService service, DictionaryResource resource) {
+    public MainView(GameService service) {
         this.service = service;
-        this.resource = resource;
 
         startLayout = new StartLayout();
         startLayout.getStartButton().addClickListener(event -> startGame());
@@ -106,8 +102,7 @@ public class MainView extends VerticalLayout {
         }
 
         if (CollectionUtils.isEmpty(dictionary)) {
-            dictionary = resource.getDictionary(gameLanguage, gameComplexityLevel);
-            dictionary = service.createCache(dictionary);
+            dictionary = service.createCache(gameLanguage, gameComplexityLevel);
         }
 
         if (finishGame != null) {

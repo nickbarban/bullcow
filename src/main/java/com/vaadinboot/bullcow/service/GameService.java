@@ -23,5 +23,5 @@ public interface GameService {
 
     List<String> getCache(GameLanguage gameLanguage, int maxLength);
 
-    List<String> createCache(List<String> dictionary);
+    List<String> createCache(GameLanguage dictionary, int level);
 }

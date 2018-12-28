@@ -11,11 +11,13 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Id;
+import javax.persistence.Table;
 
 /**
  * @author Nick Barban.
  */
 @Entity
+@Table(name = "dictionary_entity", schema = "bullcow")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -23,9 +25,10 @@ import javax.persistence.Id;
 public class DictionaryEntity {
 
     @Id
+    @Column(name = "word")
     private String word;
 
-    @Column
+    @Column(name = "language")
     @Enumerated(EnumType.STRING)
     private GameLanguage language;
 

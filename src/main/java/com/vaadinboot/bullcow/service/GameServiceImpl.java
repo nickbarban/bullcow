@@ -9,6 +9,7 @@ import com.vaadinboot.bullcow.ui.MainView;
 import javaslang.Tuple;
 import javaslang.Tuple2;
 import lombok.extern.java.Log;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,14 +27,19 @@ import java.util.stream.Collectors;
 @Log
 public class GameServiceImpl implements GameService {
 
-    @Autowired
-    private GameRepository gameRepository;
+    private final GameRepository gameRepository;
+
+    private final DictionaryRepository dictionaryRepository;
 
     @Autowired
-    private DictionaryRepository dictionaryRepository;
+    public GameServiceImpl(GameRepository gameRepository, DictionaryRepository dictionaryRepository) {
+        this.gameRepository = gameRepository;
+        this.dictionaryRepository = dictionaryRepository;
+    }
 
     @Override
     public String createSecretWord(String userName, List<String> dictionary) {
+
         String secretWord = generateRandomWord(dictionary);
 
         while (!hasUniqueChars(secretWord)) {
@@ -48,14 +54,11 @@ public class GameServiceImpl implements GameService {
     @Override
     public boolean hasUniqueChars(String word) {
 
-        log.info(String.format("Check word: %s has only unique chars", word));
-
         int MAX_CHAR = 256;
 
-        // If length is greater than 256,
-        // some characters must have been repeated
-        if (word.length() > MAX_CHAR)
+        if (word.length() > MAX_CHAR) {
             return false;
+        }
 
         boolean[] chars = new boolean[MAX_CHAR];
         Arrays.fill(chars, false);
@@ -64,19 +67,18 @@ public class GameServiceImpl implements GameService {
             int index = (int) word.charAt(i);
 
             if (index > 256) {
-                log.warning(String.format("Word: %s has wrong char at index %d", word, index));
+                log.severe(String.format("Word: %s has wrong char at index %d", word, index));
                 return false;
             }
 
-            /* If the value is already true, string
-               has duplicate characters, return false */
-            if (chars[index] == true)
+            if (chars[index]) {
+                log.warning(String.format("Word: %s has non-unique char at index %d", word, word.indexOf(index)));
                 return false;
+            }
 
             chars[index] = true;
         }
 
-        /* No duplicates encountered, return true */
         return true;
     }
 
@@ -120,10 +122,23 @@ public class GameServiceImpl implements GameService {
     }
 
     @Override
-    public List<String> createCache(List<String> dictionary) {
+    public List<String> createCache(GameLanguage language, int level) {
+        DictionaryResource dictionaryResource;
+        List<String> dictionary = null;
+        int i = 0;
+
+        while (CollectionUtils.isEmpty(dictionary)) {
+            dictionaryResource = language.getResources().get(i++);
+            dictionary = dictionaryResource.getDictionary(language);
+        }
+
+        dictionaryRepository.saveAll(dictionary.stream()
+                .map(s -> new DictionaryEntity(s, MainView.gameLanguage))
+                .collect(Collectors.toList()));
+
         return dictionary.stream()
+                .filter(s -> s.length() == level)
                 .filter(this::hasUniqueChars)
-                .peek(s -> dictionaryRepository.save(new DictionaryEntity(s, MainView.gameLanguage)))
                 .collect(Collectors.toList());
     }
 

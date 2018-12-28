@@ -12,13 +12,13 @@ import java.util.List;
  */
 @Getter
 @Setter
-public class OxfordApiDto {
+public class OxfordApiDto<T> {
 
     private OxfordApiMetadata metadata;
-    private List<WordDto> results;
+    private List<T> results;
 
     @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-    public OxfordApiDto(@JsonProperty("results") List<WordDto> results,
+    public OxfordApiDto(@JsonProperty("results") List<T> results,
                         @JsonProperty("metadata") OxfordApiMetadata metadata) {
         this.metadata = metadata;
         this.results = results;

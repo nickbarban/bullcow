@@ -16,7 +16,10 @@ import java.util.stream.IntStream;
 public class RightDeskLayout extends VerticalLayout {
 
     public RightDeskLayout() {
-        List<String> letters = IntStream.rangeClosed('A', 'Z')
+
+        char firstLetter = MainView.gameLanguage.getRange()._1;
+        char lastLetter = 'Z';
+        List<String> letters = IntStream.rangeClosed(firstLetter, lastLetter)
                 .mapToObj(ch -> String.valueOf((char) ch))
                 .collect(Collectors.toList());
 
