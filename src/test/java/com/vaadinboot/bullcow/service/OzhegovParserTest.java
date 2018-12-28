@@ -5,8 +5,10 @@ import com.vaadinboot.bullcow.enums.GameLanguage;
 import org.assertj.core.api.Assertions;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -24,7 +26,11 @@ public class OzhegovParserTest {
 
     private DictionaryResource sut;
 
+    @Autowired
+    private GameService service;
+
     @Test
+    @Ignore
     public void shouldGetDictionaryFromOzhegovOrg() {
         sut = new OzhegovOrgDictionaryResource();
         final int level = 5;
@@ -64,5 +70,17 @@ public class OzhegovParserTest {
         System.out.println(new String(new char[100]).replace('\0', 'T'));
 
         Assertions.assertThat(strings).isNotEmpty().startsWith("А").endsWith("АЯТОЛЛА");
+    }
+
+    @Test
+    public void shouldCheckRussianWordsForUniqueChars() {
+        boolean result = service.hasUniqueChars("word", GameLanguage.ENGLISH);
+        Assertions.assertThat(result).isTrue();
+        result = service.hasUniqueChars("мелодия", GameLanguage.RUSSIAN);
+        Assertions.assertThat(result).isTrue();
+        result = service.hasUniqueChars("clock", GameLanguage.ENGLISH);
+        Assertions.assertThat(result).isFalse();
+        result = service.hasUniqueChars("мама", GameLanguage.RUSSIAN);
+        Assertions.assertThat(result).isFalse();
     }
 }

@@ -11,15 +11,15 @@ import java.util.List;
  * @author Nick Barban.
  */
 public interface GameService {
-    String createSecretWord(String userName, List<String> dictionary);
+    String createSecretWord(String userName, List<String> dictionary, GameLanguage language);
 
-    boolean hasUniqueChars(String word);
+    boolean hasUniqueChars(String word, GameLanguage language);
 
     Tuple2<String, String> check(String value, String secretWord);
 
     Boolean gameResult(Tuple2<String, String> result, int gameComplexityLevel);
 
-    void validateWord(String value, int maxLength, List<String> dictionary);
+    void validateWord(String value, int maxLength, List<String> dictionary, GameLanguage language);
 
     List<String> getCache(GameLanguage gameLanguage, int maxLength);
 

@@ -69,7 +69,7 @@ public class MainView extends VerticalLayout {
             }
 
             try {
-                service.validateWord(value, gameComplexityLevel, dictionary);
+                service.validateWord(value, gameComplexityLevel, dictionary, gameLanguage);
             } catch (Exception e) {
                 wordField.setInvalid(true);
                 Notification.show(String.format("Input is invalid: %s", e.getMessage()), NOTIFICATION_DURATION, Notification.Position.TOP_END);
@@ -110,7 +110,7 @@ public class MainView extends VerticalLayout {
         }
 
         startLayout.setVisible(false);
-        secretWord = service.createSecretWord(userName, dictionary);
+        secretWord = service.createSecretWord(userName, dictionary, gameLanguage);
         gameLayout = new GameLayout();
         addRow();
         gameLayout.setVisible(true);

@@ -14,9 +14,10 @@ import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Implementation for {@link GameService}.
@@ -38,11 +39,11 @@ public class GameServiceImpl implements GameService {
     }
 
     @Override
-    public String createSecretWord(String userName, List<String> dictionary) {
+    public String createSecretWord(String userName, List<String> dictionary, GameLanguage language) {
 
         String secretWord = generateRandomWord(dictionary);
 
-        while (!hasUniqueChars(secretWord)) {
+        while (!hasUniqueChars(secretWord.trim().toLowerCase(), language)) {
             secretWord = generateRandomWord(dictionary);
         }
 
@@ -52,34 +53,22 @@ public class GameServiceImpl implements GameService {
     }
 
     @Override
-    public boolean hasUniqueChars(String word) {
+    public boolean hasUniqueChars(String word, GameLanguage language) {
+        Tuple2<Character, Character> range = language.getRange();
+        List<Character> alphabet = IntStream.rangeClosed(Character.toLowerCase(range._1), Character.toLowerCase(range._2))
+                .mapToObj(value -> (char) value)
+                .collect(Collectors.toList());
 
-        int MAX_CHAR = 256;
-
-        if (word.length() > MAX_CHAR) {
+        if (word.length() > alphabet.size()) {
+            System.out.println(String.format("Word %s can not be longer than %d characters", word, alphabet.size()));
             return false;
         }
 
-        boolean[] chars = new boolean[MAX_CHAR];
-        Arrays.fill(chars, false);
-
-        for (int i = 0; i < word.length(); i++) {
-            int index = (int) word.charAt(i);
-
-            if (index > 256) {
-                log.severe(String.format("Word: %s has wrong char at index %d", word, index));
-                return false;
-            }
-
-            if (chars[index]) {
-                log.warning(String.format("Word: %s has non-unique char at index %d", word, word.indexOf(index)));
-                return false;
-            }
-
-            chars[index] = true;
-        }
-
-        return true;
+        List<Character> wordChars = word.chars()
+                .mapToObj(value -> (char) value)
+                .collect(Collectors.toList());
+        HashSet<Character> setOfWordChars = new HashSet<>(wordChars);
+        return alphabet.containsAll(wordChars) && setOfWordChars.size() == wordChars.size();
     }
 
     @Override
@@ -106,10 +95,10 @@ public class GameServiceImpl implements GameService {
     }
 
     @Override
-    public void validateWord(String word, int length, List<String> dictionary) {
+    public void validateWord(String word, int length, List<String> dictionary, GameLanguage language) {
         Validate.notBlank(word, "The word can not be blank");
         Validate.isTrue(word.length() == length, String.format("The word should have length=%d", length));
-        Validate.isTrue(hasUniqueChars(word), "The word should have only unique chars");
+        Validate.isTrue(hasUniqueChars(word.trim().toLowerCase(), language), "The word should have only unique chars");
         Validate.isTrue(dictionary.contains(word), String.format("The word should be simple %s", MainView.gameCathegory));
     }
 
@@ -133,12 +122,12 @@ public class GameServiceImpl implements GameService {
         }
 
         dictionaryRepository.saveAll(dictionary.stream()
-                .map(s -> new DictionaryEntity(s, MainView.gameLanguage))
+                .map(s -> new DictionaryEntity(s.toLowerCase(), language))
                 .collect(Collectors.toList()));
 
         return dictionary.stream()
                 .filter(s -> s.length() == level)
-                .filter(this::hasUniqueChars)
+                .filter(word -> hasUniqueChars(word, language))
                 .collect(Collectors.toList());
     }
 
